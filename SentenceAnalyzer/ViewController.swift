@@ -51,6 +51,28 @@ class ViewController: UIViewController {
     }
     
     @IBAction func analzeAsync(_ sender: Any) {
+        let start = Date.now.timeIntervalSinceReferenceDate
+        sentenceCountLabel.text = "-"
+        averageLangthLabel.text = "-"
+        statusLabel.text = "analze file loading..."
+        
+        var cnt = 0
+        var len = 0
+        
+        Task {
+            for try await line in URL.tempFileURL.lines {
+                let sentences = line.components(separatedBy: ".").filter { $0.trimmingCharacters(in: .whitespacesAndNewlines).count > 0 }
+                len += sentences.reduce(0, { $0 + $1.count } )
+                cnt += sentences.count
+                self.sentenceCountLabel.text = cnt.formatted()
+                self.averageLangthLabel.text = (len/cnt).formatted()
+            }
+            self.sentenceCountLabel.text = cnt.formatted()
+            self.averageLangthLabel.text = (len/cnt).formatted()
+            let elaspsedTime = Date.now.timeIntervalSinceReferenceDate - start
+            self.statusLabel.text = "analyze in \(elaspsedTime.formatted(.number.precision(.fractionLength(3)))) seconds"
+        }
+        
     }
     
     
